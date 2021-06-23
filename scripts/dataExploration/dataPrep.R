@@ -21,6 +21,7 @@
 
 #### Preamble ####
 
+set.seed(1)
 library(modeest)
 library(imbalance)
 

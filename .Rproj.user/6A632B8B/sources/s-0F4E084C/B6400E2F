@@ -1,0 +1,27 @@
+{
+    "id": "B6400E2F",
+    "path": "C:/Users/Thomas.Padgett.HEOR/R_area/strokePredictionML/scripts/MLModels/nnet_model.R",
+    "project_path": "scripts/MLModels/nnet_model.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1624453008248.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "tempName": "Untitled1",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "69,0",
+        "scrollLine": "42"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1624461152,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1624461152816,
+    "read_only": false,
+    "read_only_alternatives": []
+}
