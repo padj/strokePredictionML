@@ -1,0 +1,15 @@
+name,source.name,source.file,source.dir,source.file.type,value.type,true.value,test.name,test.value,acceptance.flag,censor,censor.true,comment
+uid,usubjid,adsl,,ppl,char,,,,,,,
+dm.arm,arm,adsl,,ppl,char,,,,,,,
+dm.actarm,actarm,adsl,,ppl,char,,,,,,,
+dm.sex,sex,adsl,,ppl,char,,,,,,,
+dm.age,age,adsl,,ppl,int,,,,,,,
+dm.ethnic,ethnic,adsl,,ppl,char,,,,,,,
+dm.race,race,adsl,,ppl,char,,,,,,,
+dm.birth.dt,brthdt,adsl,,ppl,date,,,,,,,
+dm.randomisation.dt,randdt,adsl,,ppl,date,,,,,,,
+dm.treatment.start.dt,trtsdt,adsl,,ppl,date,,,,,,,
+dm.treatment.end.dt,trtedt,adsl,,ppl,date,,,,,,,
+dm.country,country,adsl,,ppl,char,,,,,,,Country of site
+dm.region1,region1,adsl,,ppl,char,,,,,,,Baseline region grouping
+dm.smokestat,smokstat,adsl,,ppl,char,,,,,,,Smoking status
