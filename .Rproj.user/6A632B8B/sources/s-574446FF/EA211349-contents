@@ -1,15 +1,15 @@
-# nnet_model
+# rf_model
 ###############################################################################
 # -----------------------------------------------------------------------------
 # SCRIPT:
-# Name:       nnet_model.R
-# Date:       23 June 2021
+# Name:       rf_model.R
+# Date:       24 June 2021
 # Version:    1.0.0
 # Authors:    thomas.padgett
 #
 # Description:
 #             Imports prepped, feature-engineered test and train data. Trains
-#             a neural network, tested on the test set. Performance is reviewed
+#             a random forest, tested on the test set. Performance is reviewed
 #             using the confusion matrix and AUC metric.
 #
 # Change notes:
@@ -25,6 +25,9 @@ library(pROC)
 library(caret)
 library(e1071) #required within caret::train()
 
+# We'll use this later to define where we output to.
+output_location <- 'scripts/MLModels/'
+
 #### Function definitions ####
 
 
@@ -38,31 +41,56 @@ test <- read.csv(test_file)
 
 #### Model ####
 model <- list()
+mtry <- sqrt(ncol(train))
+tuneGrid <- expand.grid(.mtry=mtry)
+modellist <- list()
+
 # Define the training control method. 
 # K-fold cross validation (number = folds)
 model$ctrl <- caret::trainControl(method = "repeatedcv", 
-                     number = 20, 
-                     repeats = 5, 
-                     search = "grid", 
-                     classProbs = FALSE)
+                                  number = 10, 
+                                  repeats = 3, 
+                                  search = "grid", 
+                                  classProbs = FALSE)
 
-# Train the neural network
-model$nnet <- caret::train(as.factor(stroke) ~ .,
-                    data = train,
-                    method = "nnet",
-                    metric = "Kappa",
-                    trControl = model$ctrl)
+# Train the random forest
+# with different ntree parameters
+for (ntree in c(10,50,100,250,500,1000,2000,2500,3500,4000,5000)) {
+  
+  rf <- caret::train(as.factor(stroke) ~ .,
+                          data = train,
+                          method = "rf",
+                          metric = "Kappa",
+                          tuneGrid = tuneGrid,
+                          trControl = model$ctrl)
+  
+  modellist[[toString(ntree)]] <- rf
+}
 
-print(model$nnet) # Review the model summary
+# This bit allows us to plot and assess the different models 
+results <- resamples(modellist)
+summary(results)
+
+# We can now save the plot
+image_name <- 'rf_dotplot'
+png(paste0(output_location,image_name,'.png'), width = 800, height = 600)
+dotplot(results)
+dev.off()
+
+
+# Review the dotplot and select the model that performs best. In  this case, 
+# the version with nTree = 500 performs well (although all perform well).
+# Set the best version as the final version
+model$rf <- modellist$'500'
 
 # Apply the model to the test set
-predicted <- predict(model$nnet, test)
+predicted <- predict(model$rf, test)
 
 # Calculate the Confusion Matrix and statistics surrounding the performance of 
 # our model
 model$CM <- caret::confusionMatrix(data = predicted, 
-                             reference = as.factor(test$stroke), 
-                             positive='1')
+                                   reference = as.factor(test$stroke), 
+                                   positive='1')
 print(model$CM) # view confusion matrix
 
 # It's also common to score the performance of the model using the area under 
@@ -84,5 +112,12 @@ model$test_file <- test_file
 # The list "model" contains the trained model, the control file, the 
 # confusion matrix and the AUC metric, as well as the names of the train and 
 # test files used in development of the model.
-output_location <- paste0('scripts/MLModels/','nnet_model.RData')
-save(model, file=output_location)
+output_model_name <- 'rf_model.RData'
+save(model, file=paste0(output_location,output_model_name))
+
+
+
+# The real question is why does this perform so well on the training data and 
+# so badly on the test data?
+# The answer is likely that the random forest is overfitted to the training
+# data.

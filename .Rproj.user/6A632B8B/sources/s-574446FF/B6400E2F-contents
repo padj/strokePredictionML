@@ -75,7 +75,8 @@ AUC_val = pROC::auc(response=test$stroke, predictor=ordered(predicted))
 print(AUC_val) # A score of 1 is very good, a score of 0.5 is very bad. 
 model$AUC <- AUC_val
 
-model$train_file <- train_file
+# Add train and test file names for reference and reproducibility. 
+model$train_file <- train_file 
 model$test_file <- test_file
 
 # Now that the model is developed/trained, we should save the model, along with
