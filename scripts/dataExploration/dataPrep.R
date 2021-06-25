@@ -9,8 +9,8 @@
 #
 # Description:
 #             Import, explore, explain, clean, and manipulate base data for 
-#             the strokePredictionML models. Outputs prepared data. Original
-#             data: 
+#             the strokePredictionML models. Outputs prepared data. Includes 
+#             some featuring engineering. Original data: 
 #             https://www.kaggle.com/fedesoriano/stroke-prediction-dataset
 #
 # Change notes:

@@ -30,8 +30,8 @@ library(e1071) #required within caret::train()
 
 #### Import data ####
 
-train_file <- "data/trainDataOversampled_featEng_v1.csv"
-test_file <- "data/testDataOversampled_featEng_v1.csv"
+train_file <- "data/trainDataOversampled_featEng_selected_v1.csv"
+test_file <- "data/testDataOversampled_featEng_selected_v1.csv"
 
 train <- read.csv(train_file)
 test <- read.csv(test_file)
@@ -84,5 +84,5 @@ model$test_file <- test_file
 # The list "model" contains the trained model, the control file, the 
 # confusion matrix and the AUC metric, as well as the names of the train and 
 # test files used in development of the model.
-output_location <- paste0('scripts/MLModels/','nnet_model.RData')
+output_location <- paste0('scripts/MLModels/','nnet_model_selected.RData')
 save(model, file=output_location)
