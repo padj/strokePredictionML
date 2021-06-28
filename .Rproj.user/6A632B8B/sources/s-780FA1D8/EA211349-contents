@@ -116,9 +116,3 @@ output_model_location <- 'scripts/MLModels/'
 output_model_name <- 'rf_model_binned.RData'
 save(model, file=paste0(output_model_location,output_model_name))
 
-
-
-# The real question is why does this perform so well on the training data and 
-# so badly on the test data?
-# The answer is likely that the random forest is overfitted to the training
-# data.

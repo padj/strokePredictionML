@@ -26,7 +26,6 @@ library(caret)
 library(e1071) #required within caret::train()
 library(xgboost)
 library(plyr)
-library(xgboost)
 library(h2o)
 library(gbm)
 
@@ -39,8 +38,8 @@ output_location <- 'output/XGB/'
 
 #### Import data ####
 
-train_file <- "data/trainDataOversampled_binned_v1.csv"
-test_file <- "data/testDataOversampled_binned_v1.csv"
+train_file <- "data/trainDataOversampled_featEng_v1.csv"
+test_file <- "data/testDataOversampled_featEng_v1.csv"
 
 train <- read.csv(train_file)
 test <- read.csv(test_file)
@@ -48,7 +47,7 @@ test <- read.csv(test_file)
 
 #### Model ####
 
-XGB_models <- c('xgbLinear', 'xgbTree', 'gbm')
+xgb_models <- c('xgbLinear', 'xgbTree', 'gbm')
 # 'gbm_h2o' <- doesn't seem to work.
 # Note: xgbDART seems to take forever. 'xgbDART', 
 
@@ -64,7 +63,7 @@ model$ctrl <- caret::trainControl(method = "repeatedcv",
 
 
 # Train the model
-for (mdl in XGB_models) {
+for (mdl in xgb_models) {
   
   print(paste0('running ', mdl))
   
@@ -83,7 +82,7 @@ results <- resamples(modellist)
 summary(results)
 
 # We can now save the plot
-image_name <- 'xgb_binned_dotplot'
+image_name <- 'xgb_dotplot'
 png(paste0(output_location,image_name,'.png'), width = 800, height = 600)
 dotplot(results)
 dev.off()
@@ -122,5 +121,5 @@ model$test_file <- test_file
 # confusion matrix and the AUC metric, as well as the names of the train and 
 # test files used in development of the model.
 output_model_location <- 'scripts/MLModels/'
-output_model_name <- 'xgb_model_binned.RData'
+output_model_name <- 'xgb_model.RData'
 save(model, file=paste0(output_model_location,output_model_name))
