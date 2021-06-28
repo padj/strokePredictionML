@@ -1,16 +1,16 @@
-# rf_model
+# XGB_models
 ###############################################################################
 # -----------------------------------------------------------------------------
 # SCRIPT:
-# Name:       rf_model.R
-# Date:       24 June 2021
+# Name:       XGB_models.R
+# Date:       28 June 2021
 # Version:    1.0.0
 # Authors:    thomas.padgett
 #
 # Description:
-#             Imports prepped, feature-engineered test and train data. Trains
-#             a random forest, tested on the test set. Performance is reviewed
-#             using the confusion matrix and AUC metric.
+#             Imports prepped, test and train data. Trains using various XGB
+#             methods within caret. Tested on the test set. Performance is 
+#             reviewed using the confusion matrix and AUC metric.
 #
 # Change notes:
 #             N/A
@@ -24,9 +24,15 @@ set.seed(10) # Ensure repeatability
 library(pROC)
 library(caret)
 library(e1071) #required within caret::train()
+library(xgboost)
+library(plyr)
+library(xgboost)
+library(h2o)
+library(gbm)
+
 
 # We'll use this later to define where we output to.
-output_location <- 'output/rf/'
+output_location <- 'output/XGB/'
 
 #### Function definitions ####
 
@@ -39,32 +45,37 @@ test_file <- "data/testDataOversampled_binned_v1.csv"
 train <- read.csv(train_file)
 test <- read.csv(test_file)
 
+
 #### Model ####
+
+XGB_models <- c('xgbLinear', 'xgbTree', 'gbm')
+# 'gbm_h2o' <- doesn't seem to work.
+# Note: xgbDART seems to take forever. 'xgbDART', 
+
 model <- list()
-mtry <- sqrt(ncol(train))
-tuneGrid <- expand.grid(.mtry=mtry)
 modellist <- list()
 
 # Define the training control method. 
 # K-fold cross validation (number = folds)
 model$ctrl <- caret::trainControl(method = "repeatedcv", 
-                                  number = 10, 
-                                  repeats = 3, 
-                                  search = "grid", 
-                                  classProbs = FALSE)
+                                  number = 5, 
+                                  repeats = 3,
+                                  verboseIter = FALSE)
 
-# Train the random forest
-# with different ntree parameters
-for (ntree in c(10,50,100,250,500,1000,2000,2500,3500,4000,5000)) {
+
+# Train the model
+for (mdl in XGB_models) {
   
-  rf <- caret::train(as.factor(stroke) ~ .,
-                          data = train,
-                          method = "rf",
-                          metric = "Kappa",
-                          tuneGrid = tuneGrid,
-                          trControl = model$ctrl)
+  print(paste0('running ', mdl))
   
-  modellist[[toString(ntree)]] <- rf
+  xgb <- caret::train(as.factor(stroke) ~ .,
+                   data = train,
+                   method = mdl,
+                   metric = "Kappa",
+                   trControl = model$ctrl,
+                   verbose = 0)
+  
+  modellist[[toString(mdl)]] <- xgb
 }
 
 # This bit allows us to plot and assess the different models 
@@ -72,19 +83,17 @@ results <- resamples(modellist)
 summary(results)
 
 # We can now save the plot
-image_name <- 'rf_binned_dotplot'
+image_name <- 'xgb_binned_dotplot'
 png(paste0(output_location,image_name,'.png'), width = 800, height = 600)
 dotplot(results)
 dev.off()
 
 
-# Review the dotplot and select the model that performs best. In  this case, 
-# the version with nTree = 500 performs well (although all perform well).
-# Set the best version as the final version
-model$rf <- modellist$'500'
+# take best performing
+model$xgb <- modellist$xgbLinear
 
 # Apply the model to the test set
-predicted <- predict(model$rf, test)
+predicted <- predict(model$xgb, test)
 
 # Calculate the Confusion Matrix and statistics surrounding the performance of 
 # our model
@@ -113,12 +122,5 @@ model$test_file <- test_file
 # confusion matrix and the AUC metric, as well as the names of the train and 
 # test files used in development of the model.
 output_model_location <- 'scripts/MLModels/'
-output_model_name <- 'rf_model_binned.RData'
+output_model_name <- 'xgb_model_binned.RData'
 save(model, file=paste0(output_model_location,output_model_name))
-
-
-
-# The real question is why does this perform so well on the training data and 
-# so badly on the test data?
-# The answer is likely that the random forest is overfitted to the training
-# data.
