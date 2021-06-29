@@ -33,8 +33,8 @@ output_location <- 'output/rf/'
 
 #### Import data ####
 
-train_file <- "data/trainDataOversampled_binned_v1.csv"
-test_file <- "data/testDataOversampled_binned_v1.csv"
+train_file <- "data/trainDataOversampled_binned_cDP_v1.csv"
+test_file <- "data/testDataOversampled_binned_cDP_v1.csv"
 
 train <- read.csv(train_file)
 test <- read.csv(test_file)
@@ -72,7 +72,7 @@ results <- resamples(modellist)
 summary(results)
 
 # We can now save the plot
-image_name <- 'rf_binned_dotplot'
+image_name <- 'rf_binned_cDP_dotplot'
 png(paste0(output_location,image_name,'.png'), width = 800, height = 600)
 dotplot(results)
 dev.off()
@@ -81,7 +81,7 @@ dev.off()
 # Review the dotplot and select the model that performs best. In  this case, 
 # the version with nTree = 500 performs well (although all perform well).
 # Set the best version as the final version
-model$rf <- modellist$'500'
+model$rf <- modellist$'250'
 
 # Apply the model to the test set
 predicted <- predict(model$rf, test)
@@ -113,6 +113,6 @@ model$test_file <- test_file
 # confusion matrix and the AUC metric, as well as the names of the train and 
 # test files used in development of the model.
 output_model_location <- 'scripts/MLModels/'
-output_model_name <- 'rf_model_binned.RData'
+output_model_name <- 'rf_model_binned_cDP.RData'
 save(model, file=paste0(output_model_location,output_model_name))
 
