@@ -1,0 +1,27 @@
+{
+    "id": "013CB8B3",
+    "path": "C:/Users/Thomas.Padgett.HEOR/R_area/strokePredictionML/scripts/dataExploration/dataPrep_cDP.R",
+    "project_path": "scripts/dataExploration/dataPrep_cDP.R",
+    "type": "r_source",
+    "hash": "2876774385",
+    "contents": "",
+    "dirty": false,
+    "created": 1624960189502.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "tempName": "Untitled1",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "191,0",
+        "scrollLine": "167"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1624960464,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1624960464628,
+    "read_only": false,
+    "read_only_alternatives": []
+}
