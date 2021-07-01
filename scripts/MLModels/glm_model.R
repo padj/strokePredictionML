@@ -30,11 +30,18 @@ library(e1071) #required within caret::train()
 
 #### Import data ####
 
-train_file <- "data/trainDataOversampled_featEng_selected_v1.csv"
-test_file <- "data/testDataOversampled_featEng_selected_v1.csv"
+train_file <- "data/trainDataOversampled_featEng_v1.csv"
+test_file <- "data/testDataOversampled_featEng_v1.csv"
 
 train <- read.csv(train_file)
 test <- read.csv(test_file)
+
+# if trainDataOversampled_featEng_v1.csv
+# remove variables found to be insignificant.
+# train <- within(train, rm(ever_married_no, smoking_status_formerly_smoked, 
+#                          residence_type_rural, work_type_never_worked))
+
+
 
 
 #### Model ####
@@ -85,5 +92,5 @@ model$test_file <- test_file
 # confusion matrix and the AUC metric, as well as the names of the train and 
 # test files used in development of the model.
 output_model_location <- 'scripts/MLModels/'
-output_model_name <- 'glm_model_selected.RData'
+output_model_name <- 'glm_model.RData'
 save(model, file=paste0(output_model_location,output_model_name))
