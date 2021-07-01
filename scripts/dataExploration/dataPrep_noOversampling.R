@@ -1,20 +1,21 @@
-# dataPrep
+# dataPrep_noOversampling
 ###############################################################################
 # -----------------------------------------------------------------------------
 # SCRIPT:
-# Name:       dataPrep.R
-# Date:       23 June 2021
-# Version:    1.1.0
+# Name:       dataPrep_noOversampling.R
+# Date:       01 July 2021
+# Version:    1.0.0
 # Authors:    thomas.padgett
 #
 # Description:
 #             Import, explore, explain, clean, and manipulate base data for 
 #             the strokePredictionML models. Outputs prepared data. Includes 
-#             some featuring engineering. Original data: 
+#             some featuring engineering. calcs and outputs *_num and *_int 
+#             versions of train/test. Original data: 
 #             https://www.kaggle.com/fedesoriano/stroke-prediction-dataset
 #
 # Change notes:
-#             Now calcs and outputs *_num and *_int versions of train/test.
+#             
 #
 # -----------------------------------------------------------------------------
 ###############################################################################
@@ -25,16 +26,13 @@ set.seed(1)
 library(modeest)
 library(imbalance)
 
-
 #### Function definitions ####
-
 
 #### Import data ####
 
 dataLoc = "data/healthcare-dataset-stroke-data.csv"
 data <- read.csv(dataLoc)
 data_orig <- data #back up of original data
-
 
 #### Data cleaning ####
 
@@ -66,7 +64,7 @@ print(totalMissing) # We can see there are 201 missing bmi values.
 # We can fill in these missing bmi values with the average
 avgBMI <- round(mean(na.omit(data$bmi)),1)
 data$bmi <- as.numeric(lapply(data$bmi, function(x) {if (is.na(x)) 
-  {x=avgBMI} else {x=x}}))
+{x=avgBMI} else {x=x}}))
 rm(avgBMI) #remove the variable to keep a tidy environment
 # This is a cheap and easy way of filling in missing data but it isn't great.
 # We'll explore better ways of dealing with missingness later. 
@@ -105,40 +103,40 @@ str(data) # See the cleaned data
 # categories: male (0/1) and female (0/1)
 data$male <- sapply(data$gender, function(x) {if (x=="Male") {x=1} else {x=0}})
 data$female <- sapply(data$gender, function(x) {if (x=="Female") 
-  {x=1} else {x=0}})
+{x=1} else {x=0}})
 data <- data[-2] # This removes the original gender column.
 
 # And similar for other factor categories:
 data$ever_married_yes <- sapply(data$ever_married, function(x) {if (x=="Yes") 
-  {x=1} else {x=0}})
+{x=1} else {x=0}})
 data$ever_married_no <- sapply(data$ever_married, function(x) {if (x=="No") 
-  {x=1} else {x=0}})
+{x=1} else {x=0}})
 data <- data[-5]
 
 data$smoking_status_smokes <- sapply(data$smoking_status, 
-                      function(x) {if (x=="smokes") {x=1} else {x=0}})
+                                     function(x) {if (x=="smokes") {x=1} else {x=0}})
 data$smoking_status_never_smoked <- sapply(data$smoking_status, 
-                      function(x) {if (x=="never smoked") {x=1} else {x=0}})
+                                           function(x) {if (x=="never smoked") {x=1} else {x=0}})
 data$smoking_status_formerly_smoked <- sapply(data$smoking_status, 
-                      function(x) {if (x=="formerly smoked") {x=1} else {x=0}})
+                                              function(x) {if (x=="formerly smoked") {x=1} else {x=0}})
 data <- data[-9]
 
 data$residence_type_rural <- sapply(data$Residence_type, 
-                            function(x) {if (x=="Rural") {x=1} else {x=0}})
+                                    function(x) {if (x=="Rural") {x=1} else {x=0}})
 data$residence_type_urban <- sapply(data$Residence_type, 
-                            function(x) {if (x=="Urban") {x=1} else {x=0}})
+                                    function(x) {if (x=="Urban") {x=1} else {x=0}})
 data <- data[-6]
 
 data$work_type_self_employed <- sapply(data$work_type, 
-                      function(x) {if (x=="Self-employed") {x=1} else {x=0}})
+                                       function(x) {if (x=="Self-employed") {x=1} else {x=0}})
 data$work_type_private <- sapply(data$work_type, function(x) {if (x=="Private") 
-                                {x=1} else {x=0}})
+{x=1} else {x=0}})
 data$work_type_govt <- sapply(data$work_type, function(x) {if (x=="Govt_job") 
-                                {x=1} else {x=0}})
+{x=1} else {x=0}})
 data$work_type_child <- sapply(data$work_type, function(x) {if (x=="children") 
-                                {x=1} else {x=0}})
+{x=1} else {x=0}})
 data$work_type_never_worked <- sapply(data$work_type, function(x) 
-                                {if (x=="Never_worked") {x=1} else {x=0}})
+{if (x=="Never_worked") {x=1} else {x=0}})
 data <- data[-5]
 
 # Then convert nums to ints:
@@ -159,14 +157,6 @@ data$work_type_never_worked <- as.integer(data$work_type_never_worked)
 
 str(data) # Check feature engineered data
 
-#### Oversampling ####
-# ML algorithms need a balanced dataset, meaning a relatively equal number of 
-# true and false stroke patients. We can use the imbalanceRatio function within
-# the imbalance package to assess the balance of the data
-print(imbalance::imbalanceRatio(data, 'stroke')) # shows that only 5% of the 
-# patients suffered stroke, therefore not balanced. 
-
-# Two versions - numeric and integer.
 data_num <- data
 data_num$hypertension <- as.numeric(data_num$hypertension)
 data_num$heart_disease <- as.numeric(data_num$heart_disease)
@@ -203,10 +193,7 @@ data_int$work_type_govt <- as.integer(data_int$work_type_govt)
 data_int$work_type_child <- as.integer(data_int$work_type_child)
 data_int$work_type_never_worked <- as.integer(data_int$work_type_never_worked)
 
-# We can use the imbalance package to oversample the data, effectively creating
-# new patients that suffered stroke to balance the dataset.
-
-# First split the data into test and train sets using createDataPartition
+# split the data into test and train sets using sample func
 splits <- sample(1:2, size=nrow(data_num), prob=c(0.8,0.2), replace=TRUE)
 train_num = data_num[splits==1,]
 test_num = data_num[splits==2,]
@@ -217,21 +204,10 @@ train_int = data_int[splits==1,]
 test_int = data_int[splits==2,]
 train_int <- train_int[,-1] # removed id
 
-# oversample the data (1:1 ratio)
-train_oversampled_num <- imbalance::oversample(train_num, 
-                                               classAttr = "stroke", 
-                                               ratio = 1, 
-                                               method = "MWMOTE")
-
-train_oversampled_int <- imbalance::oversample(train_int, 
-                                               classAttr = "stroke", 
-                                               ratio = 1, 
-                                               method = "MWMOTE")
-
 #### Output data ####
-write.csv(train_oversampled_int, 'data/trainData_Oversampled_FEng_int_v1.csv', row.names=FALSE)
-write.csv(test_int, 'data/testData_Oversampled_FEng_int_v1.csv', row.names=FALSE)
+write.csv(train_int, 'data/trainData_FEng_int_v1.csv', row.names=FALSE)
+write.csv(test_int, 'data/testData_FEng_int_v1.csv', row.names=FALSE)
 
-write.csv(train_oversampled_num, 'data/trainData_Oversampled_FEng_num_v1.csv', row.names=FALSE)
-write.csv(test_num, 'data/testData_Oversampled_FEng_num_v1.csv', row.names=FALSE)
+write.csv(train_num, 'data/trainData_FEng_num_v1.csv', row.names=FALSE)
+write.csv(test_num, 'data/testData_FEng_num_v1.csv', row.names=FALSE)
 

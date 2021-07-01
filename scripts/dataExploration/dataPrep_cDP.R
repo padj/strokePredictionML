@@ -4,7 +4,7 @@
 # SCRIPT:
 # Name:       dataPrep_cDP.R
 # Date:       23 June 2021
-# Version:    1.0.0
+# Version:    1.1.0
 # Authors:    thomas.padgett
 #
 # Description:
@@ -14,7 +14,7 @@
 #             https://www.kaggle.com/fedesoriano/stroke-prediction-dataset
 #
 # Change notes:
-#             N/A
+#             Now calcs and outputs *_num and *_int versions of train/test.
 #
 # -----------------------------------------------------------------------------
 ###############################################################################
@@ -25,16 +25,13 @@ set.seed(1)
 library(modeest)
 library(imbalance)
 
-
 #### Function definitions ####
-
 
 #### Import data ####
 
 dataLoc = "data/healthcare-dataset-stroke-data.csv"
 data <- read.csv(dataLoc)
 data_orig <- data #back up of original data
-
 
 #### Data cleaning ####
 # Data insights and cleaning.
@@ -165,32 +162,74 @@ str(data) # Check feature engineered data
 print(imbalance::imbalanceRatio(data, 'stroke')) # shows that only 5% of the 
 # patients suffered stroke, therefore not balanced. 
 
+# Two versions - numeric and integer.
+data_num <- data
+data_num$hypertension <- as.numeric(data_num$hypertension)
+data_num$heart_disease <- as.numeric(data_num$heart_disease)
+data_num$male <- as.numeric(data_num$male)
+data_num$female <- as.numeric(data_num$female)
+data_num$ever_married_yes <- as.numeric(data_num$ever_married_yes)
+data_num$ever_married_no <- as.numeric(data_num$ever_married_no)
+data_num$smoking_status_smokes <- as.numeric(data_num$smoking_status_smokes)
+data_num$smoking_status_never_smoked<- as.numeric(data_num$smoking_status_never_smoked)
+data_num$smoking_status_formerly_smoked <- as.numeric(data_num$smoking_status_formerly_smoked)
+data_num$residence_type_rural <- as.numeric(data_num$residence_type_rural)
+data_num$residence_type_urban <- as.numeric(data_num$residence_type_urban)
+data_num$work_type_self_employed <- as.numeric(data_num$work_type_self_employed)
+data_num$work_type_private <- as.numeric(data_num$work_type_private)
+data_num$work_type_govt <- as.numeric(data_num$work_type_govt)
+data_num$work_type_child <- as.numeric(data_num$work_type_child)
+data_num$work_type_never_worked <- as.numeric(data_num$work_type_never_worked)
+
+data_int <- data
+data_int$hypertension <- as.integer(data_int$hypertension)
+data_int$heart_disease <- as.integer(data_int$heart_disease)
+data_int$male <- as.integer(data_int$male)
+data_int$female <- as.integer(data_int$female)
+data_int$ever_married_yes <- as.integer(data_int$ever_married_yes)
+data_int$ever_married_no <- as.integer(data_int$ever_married_no)
+data_int$smoking_status_smokes <- as.integer(data_int$smoking_status_smokes)
+data_int$smoking_status_never_smoked<- as.integer(data_int$smoking_status_never_smoked)
+data_int$smoking_status_formerly_smoked <- as.integer(data_int$smoking_status_formerly_smoked)
+data_int$residence_type_rural <- as.integer(data_int$residence_type_rural)
+data_int$residence_type_urban <- as.integer(data_int$residence_type_urban)
+data_int$work_type_self_employed <- as.integer(data_int$work_type_self_employed)
+data_int$work_type_private <- as.integer(data_int$work_type_private)
+data_int$work_type_govt <- as.integer(data_int$work_type_govt)
+data_int$work_type_child <- as.integer(data_int$work_type_child)
+data_int$work_type_never_worked <- as.integer(data_int$work_type_never_worked)
+
 # We can use the imbalance package to oversample the data, effectively creating
 # new patients that suffered stroke to balance the dataset.
 
 # First split the data into test and train sets using createDataPartition
-idx = createDataPartition(data$stroke, p = 0.8, list = FALSE)
-train = data[idx, ]
-test = data[-idx, ]
-train <- train[,-1] # removed id
+idx = createDataPartition(data_num$stroke, p = 0.8, list = FALSE)
+train_num = data_num[idx, ]
+test_num = data_num[-idx, ]
+train_num <- train_num[,-1] # removed id
+
+idx = createDataPartition(data_int$stroke, p = 0.8, list = FALSE)
+train_int = data_int[idx, ]
+test_int = data_int[-idx, ]
+train_int <- train_int[,-1] # removed id
 
 # oversample the data (1:1 ratio)
-train_oversampled <- imbalance::oversample(train, 
+train_oversampled_num <- imbalance::oversample(train_num, 
                                            classAttr = "stroke", 
                                            ratio = 1, 
                                            method = "MWMOTE")
 
-# Check the imbalance of each set
-print(imbalance::imbalanceRatio(test, 'stroke'))
-print(imbalance::imbalanceRatio(train, 'stroke'))
-print(imbalance::imbalanceRatio(train_oversampled, 'stroke'))
-
+train_oversampled_int <- imbalance::oversample(train_int, 
+                                               classAttr = "stroke", 
+                                               ratio = 1, 
+                                               method = "MWMOTE")
 
 #### Output data ####
-write.csv(train_oversampled, 'data/trainDataOversampled_featEng_cDP_v1.csv', row.names=FALSE)
-write.csv(test, 'data/testDataOversampled_featEng_cDP_v1.csv', row.names=FALSE)
+write.csv(train_oversampled_int, 'data/trainData_Oversampled_FEng_cDP_int_v1.csv', row.names=FALSE)
+write.csv(test_int, 'data/testData_Oversampled_FEng_cDP_int_v1.csv', row.names=FALSE)
 
-
+write.csv(train_oversampled_num, 'data/trainData_Oversampled_FEng_cDP_num_v1.csv', row.names=FALSE)
+write.csv(test_num, 'data/testData_Oversampled_FEng_cDP_num_v1.csv', row.names=FALSE)
 
 
 
