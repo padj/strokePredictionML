@@ -1,16 +1,16 @@
-# xgb_models
+# nnet_model
 ###############################################################################
 # -----------------------------------------------------------------------------
 # SCRIPT:
-# Name:       xgb_models.R
-# Date:       28 June 2021
+# Name:       nnet_model.R
+# Date:       23 June 2021
 # Version:    1.0.0
 # Authors:    thomas.padgett
 #
 # Description:
-#             Imports prepped, test and train data. Trains using various XGB
-#             methods within caret. Tested on the test set. Performance is 
-#             reviewed using the confusion matrix and AUC metric.
+#             Imports prepped, feature-engineered test and train data. Trains
+#             a neural network, tested on the test set. Performance is reviewed
+#             using the confusion matrix and AUC metric.
 #
 # Change notes:
 #             N/A
@@ -24,82 +24,47 @@ set.seed(10) # Ensure repeatability
 library(pROC)
 library(caret)
 library(e1071) #required within caret::train()
-library(xgboost)
-library(plyr)
-#library(h2o)
-library(gbm)
 
-
-# We'll use this later to define where we output to.
-output_location <- 'output/xgb/'
-output_model_location <- 'scripts/MLModels/model_RData/'
-output_model_name <- 'xgb_model_Oversampled_FEng_binned_cDP_int.RData'
-image_name <- 'xgb_dotplot_Oversampled_FEng_binned_cDP_int'
+output_location <- paste0('scripts/MLModels/model_RData/','nnet_model_Oversampled_FEng_binned_cDP_num.RData')
 
 #### Function definitions ####
 
+
 #### Import data ####
 
-train_file <- "data/trainData_Oversampled_FEng_binned_cDP_int_v1.csv"
-test_file <- "data/testData_Oversampled_FEng_binned_cDP_int_v1.csv"
+train_file <- "data/trainData_Oversampled_FEng_binned_cDP_num_v1.csv"
+test_file <- "data/testData_Oversampled_FEng_binned_cDP_num_v1.csv"
 
 train <- read.csv(train_file)
 test <- read.csv(test_file)
 
-
 #### Model ####
-
-xgb_models <- c('xgbLinear', 'xgbTree', 'gbm')
-# 'gbm_h2o' <- doesn't seem to work.
-# Note: xgbDART seems to take forever. 
-
 model <- list()
-modellist <- list()
-
 # Define the training control method. 
 # K-fold cross validation (number = folds)
 model$ctrl <- caret::trainControl(method = "repeatedcv", 
-                                  number = 10, 
-                                  repeats = 3,
-                                  verboseIter = FALSE)
+                     number = 10, 
+                     repeats = 5, 
+                     search = "grid", 
+                     classProbs = FALSE)
 
+# Train the neural network
+model$nnet <- caret::train(as.factor(stroke) ~ .,
+                    data = train,
+                    method = "nnet",
+                    metric = "Kappa",
+                    trControl = model$ctrl)
 
-# Train the model
-for (mdl in xgb_models) {
-  
-  print(paste0('running ', mdl))
-  
-  xgb <- caret::train(as.factor(stroke) ~ .,
-                   data = train,
-                   method = mdl,
-                   metric = "Kappa",
-                   trControl = model$ctrl,
-                   verbose = 0)
-  
-  modellist[[toString(mdl)]] <- xgb
-}
-
-# This bit allows us to plot and assess the different models 
-results <- resamples(modellist)
-summary(results)
-
-# We can now save the plot
-png(paste0(output_location,image_name,'.png'), width = 800, height = 600)
-dotplot(results)
-dev.off()
-
-
-# take best performing
-model$xgb <- modellist$xgbLinear
+print(model$nnet) # Review the model summary
 
 # Apply the model to the test set
-predicted <- predict(model$xgb, test)
+predicted <- predict(model$nnet, test)
 
 # Calculate the Confusion Matrix and statistics surrounding the performance of 
 # our model
 model$CM <- caret::confusionMatrix(data = predicted, 
-                                   reference = as.factor(test$stroke), 
-                                   positive='1')
+                             reference = as.factor(test$stroke), 
+                             positive='1')
 print(model$CM) # view confusion matrix
 
 # It's also common to score the performance of the model using the area under 
@@ -121,4 +86,4 @@ model$test_file <- test_file
 # The list "model" contains the trained model, the control file, the 
 # confusion matrix and the AUC metric, as well as the names of the train and 
 # test files used in development of the model.
-save(model, file=paste0(output_model_location,output_model_name))
+save(model, file=output_location)

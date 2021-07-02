@@ -1,15 +1,15 @@
-# xgb_models
+# glm_model.R
 ###############################################################################
 # -----------------------------------------------------------------------------
 # SCRIPT:
-# Name:       xgb_models.R
+# Name:       glm_model.R
 # Date:       28 June 2021
 # Version:    1.0.0
 # Authors:    thomas.padgett
 #
 # Description:
-#             Imports prepped, test and train data. Trains using various XGB
-#             methods within caret. Tested on the test set. Performance is 
+#             Imports prepped, test and train data. Trains using a glm
+#             within caret. Tested on the test set. Performance is 
 #             reviewed using the confusion matrix and AUC metric.
 #
 # Change notes:
@@ -24,76 +24,49 @@ set.seed(10) # Ensure repeatability
 library(pROC)
 library(caret)
 library(e1071) #required within caret::train()
-library(xgboost)
-library(plyr)
-#library(h2o)
-library(gbm)
 
-
-# We'll use this later to define where we output to.
-output_location <- 'output/xgb/'
 output_model_location <- 'scripts/MLModels/model_RData/'
-output_model_name <- 'xgb_model_Oversampled_FEng_binned_cDP_int.RData'
-image_name <- 'xgb_dotplot_Oversampled_FEng_binned_cDP_int'
+output_model_name <- 'glm_model_Oversampled_FEng_cDP_int.RData'
 
 #### Function definitions ####
 
+
 #### Import data ####
 
-train_file <- "data/trainData_Oversampled_FEng_binned_cDP_int_v1.csv"
-test_file <- "data/testData_Oversampled_FEng_binned_cDP_int_v1.csv"
+train_file <- "data/trainData_Oversampled_FEng_cDP_int_v1.csv"
+test_file <- "data/testData_Oversampled_FEng_cDP_int_v1.csv"
 
 train <- read.csv(train_file)
 test <- read.csv(test_file)
 
+# if trainDataOversampled_featEng_v1.csv
+# remove variables found to be insignificant.
+# train <- within(train, rm(ever_married_no, smoking_status_formerly_smoked, 
+#                          residence_type_rural, work_type_never_worked))
+
+
+
 
 #### Model ####
 
-xgb_models <- c('xgbLinear', 'xgbTree', 'gbm')
-# 'gbm_h2o' <- doesn't seem to work.
-# Note: xgbDART seems to take forever. 
-
 model <- list()
-modellist <- list()
+
 
 # Define the training control method. 
 # K-fold cross validation (number = folds)
 model$ctrl <- caret::trainControl(method = "repeatedcv", 
-                                  number = 10, 
-                                  repeats = 3,
-                                  verboseIter = FALSE)
+                                  number = 4, 
+                                  repeats = 3)
 
-
-# Train the model
-for (mdl in xgb_models) {
-  
-  print(paste0('running ', mdl))
-  
-  xgb <- caret::train(as.factor(stroke) ~ .,
-                   data = train,
-                   method = mdl,
-                   metric = "Kappa",
-                   trControl = model$ctrl,
-                   verbose = 0)
-  
-  modellist[[toString(mdl)]] <- xgb
-}
-
-# This bit allows us to plot and assess the different models 
-results <- resamples(modellist)
-summary(results)
-
-# We can now save the plot
-png(paste0(output_location,image_name,'.png'), width = 800, height = 600)
-dotplot(results)
-dev.off()
-
-
-# take best performing
-model$xgb <- modellist$xgbLinear
+model$glm <- caret::train(as.factor(stroke) ~ .,
+                    data = train,
+                    method = "glm",
+                    metric = "Kappa",
+                    trControl = model$ctrl,
+                    family = "binomial")
 
 # Apply the model to the test set
-predicted <- predict(model$xgb, test)
+predicted <- predict(model$glm, test)
 
 # Calculate the Confusion Matrix and statistics surrounding the performance of 
 # our model
