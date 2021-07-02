@@ -26,20 +26,22 @@ library(caret)
 library(e1071) #required within caret::train()
 library(xgboost)
 library(plyr)
-library(h2o)
+#library(h2o)
 library(gbm)
 
 
 # We'll use this later to define where we output to.
 output_location <- 'output/xgb/'
+output_model_location <- 'scripts/MLModels/model_RData/'
+output_model_name <- 'xgb_model_Oversampled_FEng_binned_cDP_num.RData'
+image_name <- 'xgb_dotplot_Oversampled_FEng_binned_cDP_num'
 
 #### Function definitions ####
 
-
 #### Import data ####
 
-train_file <- "data/trainDataOversampled_binned_cDP_v1.csv"
-test_file <- "data/testDataOversampled_binned_cDP_v1.csv"
+train_file <- "data/trainData_Oversampled_FEng_binned_cDP_num_v1.csv"
+test_file <- "data/testData_Oversampled_FEng_binned_cDP_num_v1.csv"
 
 train <- read.csv(train_file)
 test <- read.csv(test_file)
@@ -47,7 +49,7 @@ test <- read.csv(test_file)
 
 #### Model ####
 
-xgb_models <- c('xgbDART', 'xgbLinear', 'xgbTree', 'gbm')
+xgb_models <- c('xgbLinear', 'xgbTree', 'gbm')
 # 'gbm_h2o' <- doesn't seem to work.
 # Note: xgbDART seems to take forever. 
 
@@ -57,7 +59,7 @@ modellist <- list()
 # Define the training control method. 
 # K-fold cross validation (number = folds)
 model$ctrl <- caret::trainControl(method = "repeatedcv", 
-                                  number = 6, 
+                                  number = 10, 
                                   repeats = 3,
                                   verboseIter = FALSE)
 
@@ -82,7 +84,6 @@ results <- resamples(modellist)
 summary(results)
 
 # We can now save the plot
-image_name <- 'xgb_binned_cDP_dotplot'
 png(paste0(output_location,image_name,'.png'), width = 800, height = 600)
 dotplot(results)
 dev.off()
@@ -120,6 +121,4 @@ model$test_file <- test_file
 # The list "model" contains the trained model, the control file, the 
 # confusion matrix and the AUC metric, as well as the names of the train and 
 # test files used in development of the model.
-output_model_location <- 'scripts/MLModels/'
-output_model_name <- 'xgb_model_binned_cDP.RData'
 save(model, file=paste0(output_model_location,output_model_name))

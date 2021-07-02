@@ -1,0 +1,27 @@
+{
+    "id": "7E0B9248",
+    "path": "C:/Users/Thomas.Padgett.HEOR/R_area/strokePredictionML/scripts/MLModels/glm_model.R",
+    "project_path": "scripts/MLModels/glm_model.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1625137797049.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "tempName": "Untitled1",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "47,0",
+        "scrollLine": "22"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1625138510,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1625138510169,
+    "read_only": false,
+    "read_only_alternatives": []
+}

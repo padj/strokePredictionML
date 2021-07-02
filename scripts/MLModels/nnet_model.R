@@ -25,13 +25,15 @@ library(pROC)
 library(caret)
 library(e1071) #required within caret::train()
 
+output_location <- paste0('scripts/MLModels/model_RData/','nnet_model_Oversampled_FEng_binned_cDP_num.RData')
+
 #### Function definitions ####
 
 
 #### Import data ####
 
-train_file <- "data/trainDataOversampled_binned_cDP_v1.csv"
-test_file <- "data/testDataOversampled_binned_cDP_v1.csv"
+train_file <- "data/trainData_Oversampled_FEng_binned_cDP_num_v1.csv"
+test_file <- "data/testData_Oversampled_FEng_binned_cDP_num_v1.csv"
 
 train <- read.csv(train_file)
 test <- read.csv(test_file)
@@ -41,8 +43,8 @@ model <- list()
 # Define the training control method. 
 # K-fold cross validation (number = folds)
 model$ctrl <- caret::trainControl(method = "repeatedcv", 
-                     number = 8, 
-                     repeats = 3, 
+                     number = 10, 
+                     repeats = 5, 
                      search = "grid", 
                      classProbs = FALSE)
 
@@ -84,5 +86,4 @@ model$test_file <- test_file
 # The list "model" contains the trained model, the control file, the 
 # confusion matrix and the AUC metric, as well as the names of the train and 
 # test files used in development of the model.
-output_location <- paste0('scripts/MLModels/','nnet_model_binned_cDP.RData')
 save(model, file=output_location)

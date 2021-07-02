@@ -27,14 +27,18 @@ library(e1071) #required within caret::train()
 
 # We'll use this later to define where we output to.
 output_location <- 'output/rf/'
+dotplot_name <- 'rf_dotplot_Oversampled_FEng_binned_cDP_num'
+
+output_model_location <- 'scripts/MLModels/model_RData/'
+output_model_name <- 'rf_model_Oversampled_FEng_binned_cDP_num.RData'
 
 #### Function definitions ####
 
 
 #### Import data ####
 
-train_file <- "data/trainDataOversampled_binned_cDP_v1.csv"
-test_file <- "data/testDataOversampled_binned_cDP_v1.csv"
+train_file <- "data/trainData_Oversampled_FEng_binned_cDP_num_v1.csv"
+test_file <- "data/testData_Oversampled_FEng_binned_cDP_num_v1.csv"
 
 train <- read.csv(train_file)
 test <- read.csv(test_file)
@@ -55,7 +59,7 @@ model$ctrl <- caret::trainControl(method = "repeatedcv",
 
 # Train the random forest
 # with different ntree parameters
-for (ntree in c(10,50,100,250,500,1000,2000,2500,3500,4000,5000)) {
+for (ntree in c(10,50,100,250,500,1000,2000)) {
   
   rf <- caret::train(as.factor(stroke) ~ .,
                           data = train,
@@ -72,8 +76,7 @@ results <- resamples(modellist)
 summary(results)
 
 # We can now save the plot
-image_name <- 'rf_binned_cDP_dotplot'
-png(paste0(output_location,image_name,'.png'), width = 800, height = 600)
+png(paste0(output_location,dotplot_name,'.png'), width = 800, height = 600)
 dotplot(results)
 dev.off()
 
@@ -81,7 +84,7 @@ dev.off()
 # Review the dotplot and select the model that performs best. In  this case, 
 # the version with nTree = 500 performs well (although all perform well).
 # Set the best version as the final version
-model$rf <- modellist$'250'
+model$rf <- modellist$'500'
 
 # Apply the model to the test set
 predicted <- predict(model$rf, test)
@@ -112,7 +115,5 @@ model$test_file <- test_file
 # The list "model" contains the trained model, the control file, the 
 # confusion matrix and the AUC metric, as well as the names of the train and 
 # test files used in development of the model.
-output_model_location <- 'scripts/MLModels/'
-output_model_name <- 'rf_model_binned_cDP.RData'
 save(model, file=paste0(output_model_location,output_model_name))
 
